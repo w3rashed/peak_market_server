@@ -61,10 +61,15 @@ async function run() {
       const pageSize = parseInt(limit);
       const skip = (pageNumber - 1) * pageSize;
 
+      let sortOrder = {};
+      if (sort === "priceLowToHigh") sortOrder.price = 1; // Ascending
+      
+
       try {
         const products = await Product.find(filter)
           .skip(skip)
           .limit(pageSize)
+          .sort(sortOrder)
           .toArray();
 
         const totalProducts = await Product.countDocuments(filter);
