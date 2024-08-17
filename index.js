@@ -63,6 +63,7 @@ async function run() {
 
       let sortOrder = {};
       if (sort === "priceLowToHigh") sortOrder.price = 1; // Ascending
+      else if (sort === "priceHighToLow") sortOrder.price = -1; // Descending
       
 
       try {
