@@ -35,8 +35,50 @@ async function run() {
     const productCollection = client.db("peak-market").collection("products");
 
     app.get("/product", async (req, res) => {
-      const result = await productCollection.find().toArray();
-      res.send(result);
+      const {
+        category,
+        brand,
+        minPrice,
+        maxPrice,
+        search,
+        page = 1,
+        limit = 10,
+        sort,
+      } = req.query;
+
+      let filter = {};
+
+      if (category) filter.category = category;
+      if (brand) filter.brandname = brand;
+      if (minPrice || maxPrice) {
+        filter.price = {};
+        if (minPrice) filter.price.$gte = parseFloat(minPrice);
+        if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+      }
+      if (search) filter.productname = { $regex: search, $options: "i" };
+
+      const pageNumber = parseInt(page);
+      const pageSize = parseInt(limit);
+      const skip = (pageNumber - 1) * pageSize;
+
+      try {
+        const products = await Product.find(filter)
+          .skip(skip)
+          .limit(pageSize)
+          .toArray();
+
+        const totalProducts = await Product.countDocuments(filter);
+        const totalPages = Math.ceil(totalProducts / pageSize);
+
+        res.status(200).json({
+          products,
+          totalProducts,
+          totalPages,
+          currentPage: pageNumber,
+        });
+      } catch (err) {
+        res.status(500).json({ message: err.message });
+      }
     });
 
     console.log(
