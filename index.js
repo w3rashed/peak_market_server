@@ -3,6 +3,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const cors = require("cors");
 require("dotenv").config();
+
 app.use(
   cors({
     origin: ["http://localhost:5173"],
@@ -12,7 +13,7 @@ app.use(
 
 app.use(express.json());
 
-// mongodb code here
+// MongoDB code here
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
@@ -28,31 +29,30 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
-    try {
-    //   -------------------------------------------------
+  try {
+    await client.connect(); // Ensure the client is connected
+
     const productCollection = client.db("peak-market").collection("products");
 
-    app.get('/products',async(req,res)=>{
-        
-    })
+    app.get("/product", async (req, res) => {
+      const result = await productCollection.find().toArray();
+      res.send(result);
+    });
 
-
-
-
-
-    // ----------------------------------------------------
-      
-      console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-      // Ensures that the client will close when you finish/error
-      await client.close();
-    }
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } catch (error) {
+    console.error(error);
   }
-  run().catch(console.dir);
+}
+
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("peak_market is running HERE!");
 });
-app.listen(port, (req, res) => {
-  console.log(`server running on port ${port}`);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
