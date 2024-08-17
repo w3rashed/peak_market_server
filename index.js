@@ -30,6 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
     //   -------------------------------------------------
+    const productCollection = client.db("peak-market").collection("products");
 
 
 
