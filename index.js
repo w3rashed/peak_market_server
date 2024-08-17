@@ -32,6 +32,9 @@ async function run() {
     //   -------------------------------------------------
     const productCollection = client.db("peak-market").collection("products");
 
+    app.get('/products',async(req,res)=>{
+        
+    })
 
 
 
