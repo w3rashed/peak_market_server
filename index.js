@@ -17,7 +17,9 @@ app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nrpddgz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = `mongodb+srv://peakmarket:PmNza81MK5ZQHdHA@cluster0.nrpddgz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const uri = "mongodb://localhost:27017";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -34,7 +36,7 @@ async function run() {
 
     const productCollection = client.db("peak-market").collection("products");
 
-    app.get("/product", async (req, res) => {
+    app.get("/products", async (req, res) => {
       const {
         category,
         brand,
@@ -49,13 +51,13 @@ async function run() {
       let filter = {};
 
       if (category) filter.category = category;
-      if (brand) filter.brandname = brand;
+      if (brand) filter.brand = brand;
       if (minPrice || maxPrice) {
         filter.price = {};
         if (minPrice) filter.price.$gte = parseFloat(minPrice);
         if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
       }
-      if (search) filter.productname = { $regex: search, $options: "i" };
+      if (search) filter.productName = { $regex: search, $options: "i" };
 
       const pageNumber = parseInt(page);
       const pageSize = parseInt(limit);
@@ -68,13 +70,14 @@ async function run() {
       else if (sort === "oldest") sortOrder.createdAt = 1; // Oldest first
 
       try {
-        const products = await Product.find(filter)
+        const products = await productCollection
+          .find(filter)
           .skip(skip)
           .limit(pageSize)
           .sort(sortOrder)
           .toArray();
 
-        const totalProducts = await Product.countDocuments(filter);
+        const totalProducts = await productCollection.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / pageSize);
 
         res.status(200).json({
@@ -92,7 +95,7 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } catch (error) {
-    console.error(error);
+    console.error("MongoDB connection error:", error);
   }
 }
 
